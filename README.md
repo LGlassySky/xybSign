@@ -1,82 +1,57 @@
-# 校友邦自动签到与签退
+`本代码仅供参考和学习,请勿用于任何商业用途,所造成的一切法律后果自负,与本代码无关!`
 
-可以配合腾讯云函数使用，免去校友邦每日签到的麻烦
+# xybSign
+校友邦 多用户 自动签到(上传图片)、填写周报
+### 使用方法
+- 下载代码(解压)
+- 修改`config.js`中的配置,正确填写用户名、密码
+  默认配置了一些周报模板,要修改的话,修改config.js中的reports
+  reports的index对应的就是当周周报的多个模板,在提交周报时会随机选取其中一个
+- 在终端中进入代码目录,执行`npm install`
+- 终端中输入`node index.js`运行index.js
 
-### 运行环境
+### 利用github action自动签到
+发现下载代码运行的方式对于大部分人来说还是有难度，下面介绍一下如何借助github平台部署`自动化签到`
+- 写在前面
+	 如果你想使用自动签到，强烈建议你注册一个[qmsg酱](https://qmsg.zendee.cn/login)账号用于发送签到通知，避免出现程序故障导致的漏签等情况！[如何使用？](https://qmsg.zendee.cn/docs/start/#%E7%A7%81%E8%81%8A%E6%B6%88%E6%81%AF%E6%8E%A8%E9%80%81%E4%BD%BF%E7%94%A8%E6%AD%A5%E9%AA%A4%E7%AE%80%E8%BF%B0)
+- 注册[github](https://github.com/signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F&source=header-home)账号
+- [fork](https://github.com/CncCbz/xybSign/fork)本项目
 
-python3
+        `如果觉得本项目对你有帮助，还可以点个star`
+	![image](https://github.com/CncCbz/xybSign/assets/43227065/a6332789-eb48-4a09-bc05-fa23f2e82eca)
+	
+	![image](https://github.com/CncCbz/xybSign/assets/43227065/5a9b8341-8730-4e04-9a78-9ef95a355dce)
 
-### 运行方式
+- 配置打卡周期（可选，默认为每天9AM执行）
 
-配置`user.json`内容，运行`autoSign.py`
+	修改文件`.github/workflows/main.yml`文件中的'cron'，如果你不知道怎么写，可以前往 [core生成](core生成)
 
+- 配置Actions secrets
+  
+	 `页面路径 Setting -> Secrets and variables -> Repository secrets`
+	  ![image](https://github.com/CncCbz/xybSign/assets/43227065/f515174f-4793-446b-bb5a-a76ce43a05f4)
 
-> 运行出错或无法实际签到请尝试使用`copy.py`版本
+- 添加 secrets
 
+	 ![image](https://github.com/CncCbz/xybSign/assets/43227065/a156b3e2-4ccc-444f-bf84-28097a7559ff)
 
-user.json
+	 secrets规则:
+	 1、每个配置之间以`;`分割
+	 2、配置项以`key=value`的形式填写
+	 3、账号配置项支持多个，以`&`分割
+	 举例如下：
+	 - 单个账号 `username=用户名&password=密码`
+	 - 多个账号`username=用户名&password=密码;username=用户名&password=密码`
+	 - 签到`mode=in` 签退`mode=out`
+	 - qmsg秘钥  `qmsgKey=秘钥`   推送qq号 `qmsgTo=qq1,qq2`
+	 完整示例：
+	 - 单个账号执行 签到、重新签到、填写周报并且通过qmsg发送签到结果给QQ号123412445： `username=用户名&password=密码&reSign=true&needReport=true;mode=in;qmsgKey=keykey;qmsgTo=123412445`
 
-```javascript
-{
-  "token":{
-    "openId":"",  //当前小程序唯一标识
-    "unionId":""  //当前小程序汇总标识
-  },
-  "location":{
-    "country":"中国",  //国家
-    "province":"", //省份
-    "city":"",  //城市
-    "adcode":"",  //行政区代码
-    "address":""  //签到地址
-  },
-  "reason": "",  //签到备注
-  "Qmsg":"",  //Qsmg酱的SCKEY
-  "ServerChan":""  //Server酱的SCKEY
-}
-```
+- 验证功能
 
-### 校友邦微信小程序`openid`获取
+	 进入Action页面 -> 点击`签到`workflow -> 运行 -> 进入运行记录
+	![image](https://github.com/CncCbz/xybSign/assets/43227065/f105ebe5-a26f-4871-b82f-21ac77a62c85)
 
-> 签到默认提交的地址是在申请实习时的地址，如果需要修改请自行修改`getPosition()`中的`lat`、`lng`参数
+	查看运行结果，如果成功签到，恭喜你，你已经实现了定时签到功能！
+	 ![image](https://github.com/CncCbz/xybSign/assets/43227065/141c63c4-57d3-4ce9-9b71-eeefd88e4a12)
 
-工具：`Fiddler`、`PC端wx`
-
-前提："校友邦"微信小程序绑定校友邦账号
-
-#### 抓包：
-1. 登录PC端wx
-2. 开启Fiddler抓包（fiddler安装方法请自行百度）
-3. 打开校友邦微信小程序，这时就能看到fiddler抓包结果，如下图
-![1.jpg](https://ae01.alicdn.com/kf/Ufb84babb909d447484df52a818947cf5W.jpg)
-4. 点击左下角停止抓包，`CTRL + F` 搜索 `openid`，如下图
-![2.jpg](https://ae01.alicdn.com/kf/U8fdb98f2d0134411892b5af943a43b00t.jpg)
-左侧黄色即为包含`openid`的数据包，选择其中一个双击 
-5. 右侧即为需要的`openid`和`unionId`
-![3.jpg](https://ae01.alicdn.com/kf/U49ecae26904a4ded81d4ad18c683e32dR.jpg)
-
-### 腾讯云函数部署python脚本
-
->腾讯云函数可以实现脚本自动运行，配合qmsg酱或server酱实现打卡通知
-
-前提：进入[腾讯云账号注册页面](https://cloud.tencent.com/register)注册账号，开通云函数服务
-
-1. 登录 [云函数控制台](https://cloud.tencent.com/login?s_url=https%3A%2F%2Fconsole.cloud.tencent.com%2Fscf)，点击左侧导航栏`函数服务`，在函数服务页面上方选择地域，单击`新建`，如下图所示：
-![1.jpg](https://ae01.alicdn.com/kf/U067134e2785948f5b05ccdb8bd582c16S.jpg)
-2. 选择`自定义创建`，运行环境选择`Python3.6`，修改函数名称，如下图：
-![2.jpg](https://ae01.alicdn.com/kf/U873a0be7a91442d5aff2948544605bfet.jpg)
-3. 在`函数代码`处选择在线编辑，新建`user.json`文件，根据[user.json](https://github.com/CncCbz/xybSign/blob/main/user.json)文件进行内容填写，并将[autoSign.py](https://github.com/CncCbz/xybSign/blob/main/autoSign.py)中的所有代码复制到云函数`index.py`中，如下图
->记得`CTRL+S`保存函数
-![3.jpg](https://ae01.alicdn.com/kf/Uf8da1b423b004fb29a9de531ad0096a0M.jpg)
-![4.jpg](https://ae01.alicdn.com/kf/Ufd4ecc4576be4542814cbbd492a10796v.jpg)
-4. 配置`触发器`，选择自定义创建，配置`corn`
-> 图中表示每日9AM触发签到函数，详细配置策略请参考[corn相关文档](https://cloud.tencent.com/document/product/583/9708#cron-.E8.A1.A8.E8.BE.BE.E5.BC.8F)
-![5.jpg](https://ae01.alicdn.com/kf/U35a7a71247e04fdf8da58c794f854a40N.jpg)
-5. 点击完成，等待函数创建完成，选择刚刚创建的函数，点击测试，查看测试结果，若测试成功，则表示云函数部署完成
-![6.jpg](https://ae01.alicdn.com/kf/U5a8052c902dd4cc2b08b2b50d70270cfT.jpg)
-![7.jpg](https://ae01.alicdn.com/kf/Ubc0fd3f3036e430b9fe73f91e5df42a9S.jpg)
-
-> 需要签退则复制[signOut.py](https://github.com/CncCbz/xybSign/blob/main/signOut.py)文件中的代码，再创建一个云函数即可
-
-> 若需要qq机器人或wx推送签到结果，可使用[Qmsg酱](https://qmsg.zendee.cn/)或[Server酱](http://sc.ftqq.com/3.versionServer)。前往他们的官网获取`KEY`后填入`user.json`即可
-
-代码参考[java 项目](https://github.com/xiaomingxingwu/xyb-sign)
